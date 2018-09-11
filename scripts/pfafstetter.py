@@ -107,3 +107,37 @@ def check_mainstem(pfaf, pfaf_out, verbose=False):
   return isMainstem
 
 
+def get_tributary(pfaf, pfaf_out):
+  '''
+  Give outlet segment "pfaf_out", return tributary group "pfaf" belongs to or if it is on mainstem
+
+  Input
+    pfaf:     scalar, string
+    pfaf_out: scalar, string
+
+  Return
+    tributary: :scalar, string: "-999"=mainstem, "0"=outside river network
+  '''
+
+  ndigit = len(pfaf_out)
+  ndigit_a = len(pfaf)
+
+  # Find first nth digits that match
+  nth = 0
+  for dd in np.arange(ndigit):
+    if pfaf[dd] == pfaf_out[dd]:
+      nth += 1
+    else:
+      break
+
+  if nth != 0:
+    tributary = '-999'
+    for dd in np.arange(nth, ndigit_a):
+      if int(pfaf[dd]) % 2 == 0:  # pfaf is tributary
+        tributary = pfaf[:dd+1]
+        break
+  else:
+    tributary = '0'   # outside river network
+
+  return tributary
+

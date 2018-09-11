@@ -5,19 +5,20 @@
 
 import fiona
 import pfafstetter as pfaf
+import sys
 
 inshp = '../test_data/Flowline_CO_14_cameo.shp'
-outshp = '../test_data/Flowline_CO_14_968611_mainstem.shp'
+outshp = '../test_data/Flowline_CO_14_cameo_tributary.shp'
 
 # Pfafstetter code
-#pfaf_out = '9685333'
-pfaf_out = '968611'
+pfaf_out = '9685333'
 ndigit = len(pfaf_out)
 
 #open shp
-shp = fiona.open(inshp)
+shp = fiona.open(inshp,'r')
 
 # print out shapefile attributes
+shp.schema['properties']['tributary'] = 'str:30'
 print(shp.schema)
 
 meta = shp.meta
@@ -29,9 +30,10 @@ with fiona.open(outshp, 'w', **meta) as output:
     if pfaf_a == '-9999':
       continue
 
-    check = pfaf.check_mainstem(pfaf_a, pfaf_out)
+    tributary = pfaf.get_tributary(pfaf_a, pfaf_out)
 
-    if check:
-      print('write seg-%s' % (pfaf_a))
-      output.write(feature)
+    print('seg-%s, tributary-%s' % (pfaf_a, tributary))
+
+    feature['properties']['tributary'] = tributary
+    output.write(feature)
 
