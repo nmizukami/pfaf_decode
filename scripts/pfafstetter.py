@@ -4,7 +4,6 @@ import numpy as np
 
 '''
 https://en.wikipedia.org/wiki/Pfafstetter_Coding_System
-
 pfafstetter coding system
 
 Given a point with code A on the river system, a point with code B is downstream if
@@ -25,7 +24,7 @@ The remaining digits of B are:
 
 def check_upstream(pfaf_a, pfaf_b, verbose=False):
   '''
-  check "pfaf_a" is an upstream segment of "pfaf_b"
+  check if "pfaf_a" is an upstream segment of "pfaf_b"
 
   Input
     pfaf_a:  scalar, string
@@ -72,44 +71,70 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
   return isUpstream
 
 
-def check_mainstem(pfaf, pfaf_out, verbose=False):
+def get_outlet(pfafs, verbose=False):
   '''
-  check "pfaf" is a mainstem of river network with "pfaf_out" outlet
+  Given a list of pfafs of river network, identify outlets
 
   Input
-    pfaf:     scalar, string
-    pfaf_out: scalar, string
+    pfafs: vector, string, list of pfaf codes
 
   Return
-    isMainstem: :scalar, logical
-
+    pfaf_out: :scalar or vectors, string, pfaf code at outlet
   '''
 
-  ndigit = len(pfaf_out)
+  pfaf_outlet = [];
 
-  ndigit_a = len(pfaf)
+  while True :
 
-  # Find first nth digits that match
-  nth = 0
-  for dd in np.arange(ndigit):
-    if pfaf[dd] == pfaf_out[dd]:
-      nth += 1
+    pfaf_outlet_tmp = ''
+
+    pfaf_list1 = []
+
+    for pfaf in pfafs:
+
+      if pfaf == '-9999' or pfaf == '0':
+        continue
+
+      if not pfaf_outlet_tmp:
+        # Initialize guessing outlet
+        pfaf_outlet_tmp = pfaf
+      else:
+        # if current guessing outlet ("pfaf_outlet_tmp") is upstream of "pfaf"
+        # Update guessing outlet as "pfaf"
+        if check_upstream(pfaf_outlet_tmp, pfaf):
+          pfaf_outlet_tmp = pfaf
+        else:
+          # blacklist if "pfaf_outlet_tmp" is no upstream of "pfaf", could be downstream or outside the network
+          pfaf_list1.append(pfaf)
+
+    pfaf_outlet.append(pfaf_outlet_tmp)
+
+    if not pfaf_list1:
+      # if blacklist is empty, done
+      break
+    # Check if blacklisted pfaf codes are actually upstream of "pfaf_outlet_tmp"
+    # and update blacklist
     else:
+      pfaf_list2 = []
+      for pfaf in pfaf_list1:
+        if not check_upstream(pfaf, pfaf_outlet_tmp):
+          pfaf_list2.append(pfaf)
+
+    # if blacklist is empty, done
+    if not pfaf_list2:
       break
+    # otherwise find outlet from blacklisted pfaf code
+    pfafs = pfaf_list2
 
-  isMainstem=True
+  if len(pfaf_outlet) == 1:
+    pfaf_outlet = pfaf_outlet[0]
 
-  for dd in np.arange(nth,ndigit_a):
-    if int(pfaf[dd]) % 2 == 0:
-      isMainstem=False
-      break
-
-  return isMainstem
+  return pfaf_outlet
 
 
 def get_tributary(pfaf, pfaf_out):
   '''
-  Give outlet segment "pfaf_out", return tributary group "pfaf" belongs to or if it is on mainstem
+  Give a outlet "pfaf_out" and pfaf code, return network category for pfaf (0:outside network, -999:mainstem, tributary code)
 
   Input
     pfaf:     scalar, string
@@ -131,7 +156,7 @@ def get_tributary(pfaf, pfaf_out):
       break
 
   if nth != 0:
-    tributary = '-999'
+    tributary = '-999'            # initialize as mainstem
     for dd in np.arange(nth, ndigit_a):
       if int(pfaf[dd]) % 2 == 0:  # pfaf is tributary
         tributary = pfaf[:dd+1]

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 '''
  Given a pfafstetter code as an outlet, subset a catchment of flowline shapefile.
+ Add field "tributary"
 '''
 
 import fiona
 import pfafstetter as pfaf
-import sys
 
-inshp = '../test_data/Flowline_CO_14_cameo.shp'
-outshp = '../test_data/Flowline_CO_14_cameo_tributary.shp'
+inshp = '../test_data/Flowline_CO_14.shp'
+outshp = '../test_data/Flowline_CO_14_tributary.shp'
 
 # Pfafstetter code
 pfaf_out = '9685333'
@@ -27,7 +27,7 @@ with fiona.open(outshp, 'w', **meta) as output:
   for feature in shp:
     pfaf_a = feature['properties']['PFAF_CODE']
 
-    if pfaf_a == '-9999':
+    if pfaf_a == '-9999' or pfaf_a == 0:
       continue
 
     tributary = pfaf.get_tributary(pfaf_a, pfaf_out)

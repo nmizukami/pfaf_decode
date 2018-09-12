@@ -4,7 +4,6 @@
 '''
 
 import fiona
-import sys
 import pfafstetter as pfaf
 
 inshp = '../test_data/Flowline_CO_14_cameo.shp'
@@ -25,7 +24,7 @@ with fiona.open(outshp, 'w', **meta) as output:
   for feature in shp:
     pfaf_a = feature['properties']['PFAF_CODE']
 
-    if pfaf_a == '-9999':
+    if pfaf_a == '-9999' or pfaf_a == 0:
       continue
 
     check = pfaf.check_upstream(pfaf_a, pfaf_b)
