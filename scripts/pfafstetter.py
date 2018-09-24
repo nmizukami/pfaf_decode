@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import numpy as np
+import sys
+from collections import defaultdict
+
 
 '''
 https://en.wikipedia.org/wiki/Pfafstetter_Coding_System
@@ -42,7 +44,7 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
 
   # Find first nth digits that match
   nth = 0
-  for dd in np.arange(ndigit):
+  for dd in range(ndigit):
     if pfaf_a[dd] == pfaf_b[dd]:
       nth += 1
     else:
@@ -53,22 +55,54 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
   # if none of digit matches, A and B are not the same river system
   if nth == 0:
     if verbose:
-      print('criteria 1: seg-%s is not upstream of %s' % (pfaf_a, pfaf_b))
+      print('prafs %s and %s are not the same system' % (pfaf_a, pfaf_b))
     isUpstream = False
   else:
-    if pfaf_b[nth:] > pfaf_a[nth:]:
-      if verbose:
-        print('criteria 2: seg-%s is not upstream of %s' % (pfaf_a, pfaf_b))
+    if len(pfaf_b) != nth and len(pfaf_a) != nth:
+      #if pfaf_b[nth:] > pfaf_a[nth:]:
+      if int(pfaf_b[nth]) > int(pfaf_a[nth]):
+        if verbose:
+          print('pfaf-%s is greater than pfaf %s after match' % (pfaf_b, pfaf_a))
+        isUpstream = False
+      else:
+        for dd in range(nth,ndigit):
+          if int(pfaf_b[dd]) % 2 == 0:
+            if verbose:
+              print('pfaf-%s include even number after match - %s ' % (pfaf_b, pfaf_b[nth:]))
+            isUpstream = False
+            break
+
+    elif len(pfaf_b) != nth and len(pfaf_a) == nth:
       isUpstream = False
-    else:
-      for dd in np.arange(nth,ndigit):
-        if int(pfaf_b[dd]) % 2 == 0:
-          if verbose:
-            print('criteria 3: seg-%s is not upstream of %s' % (pfaf_a, pfaf_b))
-          isUpstream = False
-          break
 
   return isUpstream
+
+
+def get_subbasin(pfafs, pfaf_outlet):
+  '''
+  Given a list of pfaf codes and pfaf code for desired segment in network, obtain list of upstream pfaf codes
+  Input
+
+    pfafs:       list of pfaf codes,            vector, string
+    pfaf_outlet: pfaf code at desired segment,  scalar, string
+
+  Return
+
+    sub_pfafs: list of pfaf codes upstream of outlet pfaf, vector, str
+
+  '''
+  sub_pfafs = []
+  for pfaf in pfafs:
+
+    if pfaf == '-9999' or pfaf == 0:
+      continue
+
+    check = check_upstream(pfaf, pfaf_outlet)
+
+    if check:
+     sub_pfafs.append(pfaf)
+
+  return sub_pfafs
 
 
 def get_outlet(pfafs, verbose=False):
@@ -79,7 +113,7 @@ def get_outlet(pfafs, verbose=False):
     pfafs: vector, string, list of pfaf codes
 
   Return
-    pfaf_out: :scalar or vectors, string, pfaf code at outlet
+    pfaf_out: list of pfaf codes at oulets, vector, string
   '''
 
   pfaf_outlet = [];
@@ -126,9 +160,6 @@ def get_outlet(pfafs, verbose=False):
     # otherwise find outlet from blacklisted pfaf code
     pfafs = pfaf_list2
 
-  if len(pfaf_outlet) == 1:
-    pfaf_outlet = pfaf_outlet[0]
-
   return pfaf_outlet
 
 
@@ -149,7 +180,7 @@ def get_tributary(pfaf, pfaf_out):
 
   # Find first nth digits that match
   nth = 0
-  for dd in np.arange(ndigit):
+  for dd in range(ndigit):
     if pfaf[dd] == pfaf_out[dd]:
       nth += 1
     else:
@@ -157,7 +188,7 @@ def get_tributary(pfaf, pfaf_out):
 
   if nth != 0:
     tributary = '-999'            # initialize as mainstem
-    for dd in np.arange(nth, ndigit_a):
+    for dd in range(nth, ndigit_a):
       if int(pfaf[dd]) % 2 == 0:  # pfaf is tributary
         tributary = pfaf[:dd+1]
         break
@@ -165,4 +196,124 @@ def get_tributary(pfaf, pfaf_out):
     tributary = '0'   # outside river network
 
   return tributary
+
+
+def get_tributaries(pfafs, lwr_threshold, pfaf_outlet=[]):
+  '''
+  Give a list of pfaf codes, threshold of number of segments, and list of outlet pfaf codes in tributary, return groups of tributaries
+
+  Input
+
+    pfafs:         list of pfaf_codes,                             vector, string
+    lwr_threshold: lower threshold of number of tributary segment, scaler, integer
+    pfafs_outlet:  list of mainstem outlet pfaf_codes,             vector, string, optional
+
+    a number of tributary segments has to be greater than lwr_threshold
+
+  Return
+
+    tributary: dictionary, key:   mainstem outlet pfaf
+                           items: key:   tributary code
+                                  value: list of pfafs, vector, string
+  '''
+
+  if not pfaf_outlet:
+    pfaf_outlet = get_outlet(pfafs)
+
+  tributary = {}
+
+  for pfaf_out in pfaf_outlet:
+
+    tributary_tmp = defaultdict(list)
+
+    for pfaf in pfafs:
+
+      if pfaf == '-9999' or pfaf == 0:
+        continue
+
+      tributary_code = get_tributary(pfaf, pfaf_out)
+
+      if tributary_code != '-999' and tributary_code != '0':
+
+        tributary_tmp[tributary_code].append(pfaf)
+
+    for key, values in tributary_tmp.items():
+
+      if (len(values) < lwr_threshold):
+        del tributary_tmp[key]
+
+    tributary[pfaf_out] = tributary_tmp
+
+  return tributary
+
+
+def get_mainstem(pfaf, verbose=False):
+  '''
+  Input
+
+
+  Return
+
+    mainstem: mainstem code relative to outlet, scalar, integer
+  '''
+
+  # look for consecutive odd digit from last level
+
+  ndigits = len(pfaf)
+
+  pfaf_head = '-999'
+
+  for dd in range(ndigits-1, 0, -1):
+    if int(pfaf[dd]) % 2 == 0:
+      break
+
+  if dd != ndigits-1:
+    pfaf_head = pfaf[:dd+1]
+
+  return pfaf_head
+
+
+def get_tributary_v1(pfafs, lwr_threshold):
+  '''
+  Give a list of pfaf codes, threshold of number of segments, and list of outlet pfaf codes in tributary, return groups of tributaries
+
+  Input
+
+    pfafs:         list of pfaf_codes,                             vector, string
+    lwr_threshold: lower threshold of number of tributary segment, scaler, integer
+    pfafs_outlet:  list of mainstem outlet pfaf_codes,             vector, string, optional
+
+    a number of tributary segments has to be greater than lwr_threshold
+
+  Return
+
+    tributary: dictionary, key:   mainstem outlet pfaf
+                           items: key:   tributary code
+                                  value: list of pfafs, vector, string
+  '''
+
+  mainstem_tmp = defaultdict(list)
+
+  for pfaf in pfafs:
+
+    if pfaf == '-9999' or pfaf == 0:
+      continue
+
+    mainstem_code = get_mainstem(pfaf)
+
+    mainstem_tmp[mainstem_code].append(pfaf)
+
+  mainstem = {}
+
+  for _, mainstem_pfafs in mainstem_tmp.items():
+
+    mainstem_outlet = get_outlet(mainstem_pfafs)
+
+    trib_pfafs = get_subbasin(pfafs, mainstem_outlet[0])
+
+    if len(trib_pfafs) > lwr_threshold:
+
+      mainstem[mainstem_outlet[0]] = trib_pfafs
+
+  return mainstem
 
