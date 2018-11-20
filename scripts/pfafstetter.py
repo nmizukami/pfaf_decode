@@ -65,7 +65,7 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
           print('pfaf-%s is greater than pfaf %s after match' % (pfaf_b, pfaf_a))
         isUpstream = False
       else:
-        for dd in range(nth,ndigit):
+        for dd in range(nth,len(pfaf_b)):
           if int(pfaf_b[dd]) % 2 == 0:
             if verbose:
               print('pfaf-%s include even number after match - %s ' % (pfaf_b, pfaf_b[nth:]))
