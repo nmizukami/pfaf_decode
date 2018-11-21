@@ -263,12 +263,11 @@ def get_mainstem(pfaf, verbose=False):
 
   pfaf_head = '-999'
 
-  for dd in range(ndigits-1, 0, -1):
+  for dd in range(ndigits-1, -1, -1):
     if int(pfaf[dd]) % 2 == 0:
       break
 
-  if dd != ndigits-1:
-    pfaf_head = pfaf[:dd+1]
+  pfaf_head = pfaf[:dd+1]
 
   return pfaf_head
 
