@@ -4,8 +4,6 @@ Append fields in ascii to shapefile attribute
 ascii should include common field to shapefile attribute
 '''
 
-import sys
-import fiona
 import geopandas as gpd
 import pandas as pd
 
@@ -15,25 +13,34 @@ import pandas as pd
 #asc = 'ms100_1'
 
 #Cameo
-inshp = '../test_data/Flowline_CO_14_cameo.shp'
-outshp = '../test_data/Flowline_CO_14_cameo_trib500_2.shp'
-asc = 'cameo500_2'
+#inshp = '../test_data/Flowline_CO_14_cameo.shp'
+#outshp = '../test_data/Flowline_CO_14_cameo_trib500_2.shp'
+#asc = 'cameo500_2'
 
+#upper colorado
+inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14.shp'
+outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_parallel_nm.shp'
+asc = 'my_csv.csv'
+
+
+# attributes in csv
 common_field = 'ComID'
-field_in_ascii = ['level','numseg']   # ['level','dangle']
-
-
+field_in_ascii = ['pfaf_code','pfaf_common','numseg'] # ['level','trib_id','numseg']   # ['level','dangle']
 field_in_ascii.insert(0,common_field)
+
+# read csv
 df = pd.read_csv(asc,
                  delim_whitespace=True,
                  names=field_in_ascii)
 print(df)
 
-#open shp
+#read shp
 shp = gpd.read_file(inshp)
 print shp
 
+# append csv attributes to shp
 new = pd.merge(shp, df, on=common_field, how='left', validate="one_to_one")
 print new
 
+# write new shapefile with new attributes
 new.to_file(outshp, driver='ESRI Shapefile')
