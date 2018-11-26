@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 '''
- Given a pfafstetter code as an outlet, decompose a catchment or flowline shapefile.
+ Given a list or array of pfafstetter codes, compute immediate downstream code for each reach
+ This script uses a pfaf code array from a shapefile
 '''
 import sys
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import xarray as xr
 import pfafstetter as pfaf
 
 #input
