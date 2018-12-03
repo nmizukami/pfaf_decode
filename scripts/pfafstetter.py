@@ -162,6 +162,36 @@ def get_outlet(pfafs, verbose=False):
 
   return pfaf_outlet
 
+def get_closed_basin(pfafs, pfaf_out):
+  '''
+  Given a list of pfafs of river network, identify closed basin reach within the basin defined by outlet pfaf
+
+  Input
+    pfafs: vector, string, list of pfaf codes
+
+  Return
+    pfaf_out: list of pfaf codes at oulets, vector, string
+  '''
+
+  ndigit_out = len(pfaf_out) # get the pfaf length of outlet pfaf_code
+
+  pfaf_closed = []
+
+  # check if each reach is in closed basin
+  for pfaf in pfafs:
+
+    check = pfaf.check_upstream(pfaf, pfaf_out)
+
+    if check:   # if pfaf is upstream of pfaf_out, continue
+
+      ndigit = len(pfaf) # get the pfaf length of current pfaf_code
+
+      for dd in range(ndigit_out-1, ndigit):
+        if (pfaf[dd] == '0'):
+          pfaf_closed.append(pfaf)
+          break
+
+  return pfaf_closed
 
 def get_tributary(pfaf, pfaf_out):
   '''
