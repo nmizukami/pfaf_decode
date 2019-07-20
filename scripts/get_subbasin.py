@@ -6,19 +6,15 @@
 import fiona
 import pfafstetter as pfaf
 
-
 check_closed = True    # check closed basin
 
-#inshp = '../test_data/Flowline_CO_14_cameo.shp'
-#outshp = '../test_data/Flowline_CO_14_eagle.shp'
-inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14.shp'
-outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry.shp'
+inshp = '../test_data/nhdPlus_SHPs_class250/Catchment_SA_03W.shp'
+outshp = '../test_data/nhdPlus_SHPs_class250/Catchment_SA_03W_act.shp'
 
-# Pfafstetter code
-#pfaf_b = '9688111'    #9688111: Eagle river outlet into Colorado River
-pfaf_b = '96531'    #9688111: Eagle river outlet into Colorado River
+# Pfafstetter code for outlet
+pfaf_b = '783111'
 
-fieldname = 'PFAF_CODE'
+fieldname = 'pfafCode'
 
 #open shp
 shp = fiona.open(inshp)
@@ -32,14 +28,14 @@ with fiona.open(outshp, 'w', **meta) as output:
   for feature in shp:
     pfaf_a = feature['properties'][fieldname]
 
-    if pfaf_a == '-9999' or pfaf_a == 0:
+    if pfaf_a == '-9999' or pfaf_a == 0 or pfaf_a is None:
       continue
 
     check = pfaf.check_upstream(pfaf_a, pfaf_b)
 
     if check:
 
-      isClose = False
+      isClosed = False
       if check_closed:
         for dd in range(len(pfaf_b)-1, len(pfaf_a)):
           if (pfaf_a[dd] == '0'):

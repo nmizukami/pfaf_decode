@@ -11,10 +11,10 @@ import xarray as xr
 import pfafstetter as pfaf
 
 #input
-inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14.shp' # to get seg-id, pfaf
+inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry.shp' # to get seg-id, pfaf
 network = '../test_data/NHDPlus2_updated-CONUS.nc'  # to get seg-id, seg-index and downstream-index
 #output
-outasc = './my_csv.csv'
+outasc = './my_csv1.csv'
 
 fieldname_pfaf = 'PFAF_CODE'
 fieldname_segid = 'ComID'
@@ -76,7 +76,7 @@ def decomposition(seg_ids, pfafs, pfafCode):
 
 def aggregate(pfafCode, subset_pfafs):
   # Initialization
-  idAggregate = np.full(len(subset_pfafs),'-999')
+  idAggregate = np.full(len(subset_pfafs),'-999',dtype='S32')
   numAggregate = np.full(len(subset_pfafs),'-999',dtype=int)
 
   # get pfaf old and pfaf new

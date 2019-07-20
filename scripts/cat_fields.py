@@ -18,18 +18,24 @@ import pandas as pd
 #asc = 'cameo500_2'
 
 #upper colorado
-inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14.shp'
-outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_parallel_nm.shp'
-asc = 'my_csv.csv'
+#inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry.shp'
+#outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry_parallel_fortran1.shp'
+#asc = 'seginfo1'
 
+inshp = '../test_data/nhdPlus_SHPs_class250/Flowline_CO_14.shp'
+outshp = '../test_data/nhdPlus_SHPs_class250/Flowline_CO_14_ntopo.shp'
+asc = 'streamOrder'
 
 # attributes in csv
 common_field = 'ComID'
-field_in_ascii = ['pfaf_code','pfaf_common','numseg'] # ['level','trib_id','numseg']   # ['level','dangle']
+#field_in_ascii =  ['level','trib_id','numseg']   # ['level','dangle']
+#field_in_ascii = ['pfaf_code','pfaf_common','numseg','core'] # ['level','trib_id','numseg']   # ['level','dangle']
+field_in_ascii = ['streamOrder'] # ['level','trib_id','numseg']   # ['level','dangle']
 field_in_ascii.insert(0,common_field)
 
 # read csv
 df = pd.read_csv(asc,
+                 skiprows=1,
                  delim_whitespace=True,
                  names=field_in_ascii)
 print(df)
