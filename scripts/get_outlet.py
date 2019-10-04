@@ -1,27 +1,51 @@
 #!/usr/bin/env python
-'''
-Get outlet pfafstetter code given a river network
-'''
+
+import sys
+import argparse
 import pandas as pd
 import geopandas as gpd
 import pfafstetter as pfaf
-
-inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_MS_08.shp'
 
 fieldname = 'PFAF'
 
 _output = True
 
-#open shp
-shp = gpd.read_file(inshp)
+def process_command_line():
+    '''Parse the commandline'''
+    parser = argparse.ArgumentParser(description='Script to list outlet segment pfaf code')
+    parser.add_argument('inshp',
+                        help='input shapefile')
+    parser.add_argument('fieldname',
+                        help='pfaf field name')
+    parser.add_argument('outasc',
+                        help='ascii output')
+#    # Optional arguments
+#    parser.add_argument('--outasc', action='store_true', default=False,
+#                        help='ascii output' )
 
-# list of pfaf_code
-pfafs = shp[fieldname].tolist()
+    args = parser.parse_args()
 
-pfaf_outlet = pfaf.get_outlet(pfafs)
+    return(args)
 
-print(pfaf_outlet)
 
-if _output:
-  df = pd.DataFrame(pfaf_outlet, columns=["pfaf_outlet"])
-  df.to_csv('pfaf_outlet.csv', index=False)
+# main
+if __name__ == '__main__':
+
+  # process command line
+  args = process_command_line()
+
+  #open shp
+  shp = gpd.read_file(args.inshp)
+
+  # list of pfaf_code
+  pfafs = shp[args.fieldname].tolist()
+
+  # Get outlelt list
+  pfaf_outlet = pfaf.get_outlet(pfafs)
+
+  print(pfaf_outlet)
+
+  if _output:
+    df = pd.DataFrame(pfaf_outlet, columns=["pfaf_outlet"])
+    df.to_csv(args.outasc, index=False)
+

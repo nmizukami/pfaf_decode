@@ -1,48 +1,56 @@
 #!/usr/bin/env python
-'''
- Given a pfafstetter code as an outlet, subset a catchment of flowline shapefile.
-'''
 
+import sys
+import argparse
 import fiona
 import pfafstetter as pfaf
 
 check_closed = True    # check closed basin
 
-inshp = '../test_data/nhdPlus_SHPs_class250/Catchment_SA_03W.shp'
-outshp = '../test_data/nhdPlus_SHPs_class250/Catchment_SA_03W_act.shp'
+def process_command_line():
+    '''Parse the commandline'''
+    parser = argparse.ArgumentParser(description='Script to subset a catchment based on outlet pfaf')
+    parser.add_argument('inshp',
+                        help='input shapefile')
+    parser.add_argument('outshp',
+                        help='output shapefile')
+    parser.add_argument('fieldname',
+                        help='pfaf field name')
+    parser.add_argument('outpfaf',
+                        help='pfaf code for outlet seg')
 
-# Pfafstetter code for outlet
-pfaf_b = '783111'
+    args = parser.parse_args()
 
-fieldname = 'pfafCode'
+    return(args)
 
-#open shp
-shp = fiona.open(inshp)
+# main
+if __name__ == '__main__':
 
-# print out shapefile attributes
-print(shp.schema)
+  shp = fiona.open(args.inshp)
 
-meta = shp.meta
-with fiona.open(outshp, 'w', **meta) as output:
+  meta = shp.meta
 
-  for feature in shp:
-    pfaf_a = feature['properties'][fieldname]
+  print(meta)
 
-    if pfaf_a == '-9999' or pfaf_a == 0 or pfaf_a is None:
-      continue
+  with fiona.open(args.outshp, 'w', **meta) as output:
 
-    check = pfaf.check_upstream(pfaf_a, pfaf_b)
+    for feature in shp:
+      pfaf_a = feature['properties'][args.fieldname]
 
-    if check:
+      if pfaf_a == '-9999' or pfaf_a == 0 or pfaf_a is None:
+        continue
 
-      isClosed = False
-      if check_closed:
-        for dd in range(len(pfaf_b)-1, len(pfaf_a)):
-          if (pfaf_a[dd] == '0'):
-            isClosed = True
-            break
+      check = pfaf.check_upstream(pfaf_a, args.outpfaf)
 
-      if not isClosed:
-        print('write seg-%s' % (pfaf_a))
-        output.write(feature)
+      if check:
 
+        isClosed = False
+        if check_closed:
+          for dd in range(len(args.outpfaf)-1, len(pfaf_a)):
+            if (pfaf_a[dd] == '0'):
+              isClosed = True
+              break
+
+        if not isClosed:
+          print('write seg-%s' % (pfaf_a))
+          output.write(feature)

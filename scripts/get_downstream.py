@@ -1,28 +1,27 @@
 #!/usr/bin/env python
-'''
- Given a list or array of pfafstetter codes, compute immediate downstream code for each reach
- This script uses a pfaf code array from a shapefile
-'''
+
 import sys
+import argparse
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import pfafstetter as pfaf
 
-#input
-#inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14.shp' # to get seg-id, pfaf
-inshp = '../test_data/Flowline_CO_14_cameo.shp' # to get seg-id, pfaf
-#output
-outasc = './downstream1.csv'
-
+# Hard coded variables
 fieldname_pfaf = 'PFAF_CODE'
 fieldname_segid = 'ComID'
 
-#open shp
-shp = gpd.read_file(inshp)
-# list of pfaf_code
-pfafs = shp[fieldname_pfaf].astype(str).values
-seg_ids = shp[fieldname_segid].astype(int).values
+
+def process_command_line():
+    '''Parse the commandline'''
+    parser = argparse.ArgumentParser(description='Script to compute immediate downstream elements based on pfaf code')
+    parser.add_argument('inshp',
+                        help='input shapefile')
+    parser.add_argument('outasc',
+                        help='ascii output')
+
+    args = parser.parse_args()
+
+    return(args)
 
 
 def downstream(seg_ids, pfafs, verbose=False):
@@ -95,9 +94,18 @@ def downstream(seg_ids, pfafs, verbose=False):
 
   return down_id, down_pfaf
 
-
+# main
 if __name__ == '__main__':
 
+  # process command line
+  args = process_command_line()
+
+  # Read pfaf code and segment id
+  shp = gpd.read_file(args.inshp)
+  pfafs   = shp[fieldname_pfaf].astype(str).values
+  seg_ids = shp[fieldname_segid].astype(int).values
+
+  # compute downstream elements
   down_id, down_pfaf = downstream(seg_ids, pfafs)
 
   # write out in ascii (append) using panda dataframe
@@ -106,6 +114,7 @@ if __name__ == '__main__':
                      'down_id'   :down_id,
                      'down_pfaf' :down_pfaf},
                      columns=['seg_id','pfaf_code','down_id','down_pfaf'])
-  with open(outasc, 'w') as f:
+
+  with open(args.outasc, 'w') as f:
     df.to_csv(f, header=True, index = False)
 
