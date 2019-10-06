@@ -62,11 +62,15 @@ def downstream(seg_ids, pfafs, verbose=False):
         if jdx==0:
           kdx = sub_idx
           last = pfaf1[pos:]
+
         else:
+          # another candidate... update current
           current = pfaf1[pos:]
+
           for ldx, digit in enumerate(current):
             if ldx+1 > len(last):
               break
+
             if int(digit) > int(last[ldx:ldx+1]):
               kdx = sub_idx
               last = pfaf1[pos:]

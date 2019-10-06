@@ -24,16 +24,17 @@ The remaining digits of B are:
 '''
 
 
-def check_upstream(pfaf_a, pfaf_b, verbose=False):
+def check_upstream(pfaf_a, pfaf_b, includeClose=False, verbose=False):
   '''
   check if "pfaf_a" is an upstream segment of "pfaf_b"
 
   Input
-    pfaf_a:  scalar, string
-    pfaf_b:  scalar, string
+    pfaf_a:        scalar, string
+    pfaf_b:        scalar, string
+    includeClose:  scalar, boolean , optional
 
   Return
-    isUpstream: :scalar, logical
+    isUpstream: :scalar, boolean
 
   '''
 
@@ -57,10 +58,11 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
     if verbose:
       print('prafs %s and %s are not the same system' % (pfaf_a, pfaf_b))
     isUpstream = False
+  # match some first digits...
   else:
     if len(pfaf_b) != nth and len(pfaf_a) != nth:
-      if int(pfaf_b[nth]) > int(pfaf_a[nth]) and not(int(pfaf_b[nth])==1 and int(pfaf_a[nth])==0):      # closed basin at the same level as outlet
-      #if int(pfaf_b[nth]) > int(pfaf_a[nth]):
+      #if int(pfaf_b[nth]) > int(pfaf_a[nth]) and not(int(pfaf_b[nth])==1 and int(pfaf_a[nth])==0):      # closed basin at the same level as outlet
+      if int(pfaf_b[nth]) > int(pfaf_a[nth]):
         if verbose:
           print('pfaf-%s is greater than pfaf %s after match' % (pfaf_b, pfaf_a))
         isUpstream = False
@@ -71,6 +73,18 @@ def check_upstream(pfaf_a, pfaf_b, verbose=False):
               print('pfaf-%s include even number after match - %s ' % (pfaf_b, pfaf_b[nth:]))
             isUpstream = False
             break
+
+      # check if A is closed basin
+      for dd in pfaf_a[nth:]:
+          if int(dd) == 0:
+            if verbose:
+              print('pfaf-%s is closed basin' % (pfaf_a))
+            isUpstream = False
+            break
+
+      if includeClose:
+        if pfaf_a[nth]==0:
+          isUpstream = True
 
     elif len(pfaf_b) != nth and len(pfaf_a) == nth:
       isUpstream = False
