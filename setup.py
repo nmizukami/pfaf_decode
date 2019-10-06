@@ -23,7 +23,7 @@ setup(
     maintainer="Naoki Mizukami",
     maintainer_email="mizukami@ucar.edu",
     url="https://github.com/mizukami/pfaf_decode",
-    py_modules=['pfaf_decoder'],
+    py_modules=['pfaf'],
     packages=find_packages(),
     python_requires=PYTHON_REQUIRES,
     license="Apache",
