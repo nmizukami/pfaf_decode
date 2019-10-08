@@ -61,7 +61,7 @@ def check_upstream(pfaf_a, pfaf_b, includeClose=False, verbose=False):
   # match some first digits...
   else:
     if len(pfaf_b) != nth and len(pfaf_a) != nth:
-      #if int(pfaf_b[nth]) > int(pfaf_a[nth]) and not(int(pfaf_b[nth])==1 and int(pfaf_a[nth])==0):      # closed basin at the same level as outlet
+
       if int(pfaf_b[nth]) > int(pfaf_a[nth]):
         if verbose:
           print('pfaf-%s is greater than pfaf %s after match' % (pfaf_b, pfaf_a))
@@ -86,7 +86,8 @@ def check_upstream(pfaf_a, pfaf_b, includeClose=False, verbose=False):
         if pfaf_a[nth]==0:
           isUpstream = True
 
-    elif len(pfaf_b) != nth and len(pfaf_a) == nth:
+    #elif len(pfaf_b) != nth and len(pfaf_a) == nth:
+    else: # does this happen?
       isUpstream = False
 
   return isUpstream
