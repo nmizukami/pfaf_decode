@@ -23,5 +23,5 @@ Append to the system environment variable PYTHONPATH the pfafstetter directory
 
 ```bash
 PYTHONPATH=$PYTHONPATH:<path_to_pfafstetter directory>
+export $PYTHONPATH
 ```
-
