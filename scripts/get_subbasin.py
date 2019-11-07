@@ -5,7 +5,7 @@ import argparse
 import fiona
 import pfafstetter as pfaf
 
-check_closed = True    # check closed basin
+include_closed = True    # check closed basin
 
 def process_command_line():
     '''Parse the commandline'''
@@ -26,6 +26,9 @@ def process_command_line():
 # main
 if __name__ == '__main__':
 
+  # process command line
+  args = process_command_line()
+
   shp = fiona.open(args.inshp)
 
   meta = shp.meta
@@ -40,17 +43,12 @@ if __name__ == '__main__':
       if pfaf_a == '-9999' or pfaf_a == 0 or pfaf_a is None:
         continue
 
-      check = pfaf.check_upstream(pfaf_a, args.outpfaf)
+      if pfaf_a == args.outpfaf:
+        check = True
+      else:
+        check = pfaf.check_upstream(pfaf_a, args.outpfaf, includeClose=include_closed)
 
       if check:
 
-        isClosed = False
-        if check_closed:
-          for dd in range(len(args.outpfaf)-1, len(pfaf_a)):
-            if (pfaf_a[dd] == '0'):
-              isClosed = True
-              break
-
-        if not isClosed:
-          print('write seg-%s' % (pfaf_a))
-          output.write(feature)
+        print('write seg-%s' % (pfaf_a))
+        output.write(feature)
