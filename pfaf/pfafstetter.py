@@ -75,16 +75,13 @@ def check_upstream(pfaf_a, pfaf_b, includeClose=False, verbose=False):
             break
 
       # check if A is closed basin
-      for dd in pfaf_a[nth:]:
-          if int(dd) == 0:
-            if verbose:
-              print('pfaf-%s is closed basin' % (pfaf_a))
-            isUpstream = False
-            break
-
-      if includeClose:
-        if pfaf_a[nth]==0:
-          isUpstream = True
+      if not includeClose:
+        for dd in pfaf_a[nth:]:
+            if int(dd) == 0:
+              if verbose:
+                print('pfaf-%s is closed basin' % (pfaf_a))
+              isUpstream = False
+              break
 
     #elif len(pfaf_b) != nth and len(pfaf_a) == nth:
     else: # does this happen?
