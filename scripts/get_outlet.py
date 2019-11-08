@@ -4,7 +4,7 @@ import sys
 import argparse
 import pandas as pd
 import geopandas as gpd
-import pfafstetter as pfaf
+import pfaf.pfafstetter as pfaf
 
 fieldname = 'PFAF'
 

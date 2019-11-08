@@ -3,7 +3,7 @@
 import sys
 import argparse
 import fiona
-import pfafstetter as pfaf
+import pfaf.pfafstetter as pfaf
 
 include_closed = True    # check closed basin
 

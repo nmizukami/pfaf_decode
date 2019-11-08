@@ -5,7 +5,7 @@
 '''
 
 import fiona
-import pfafstetter as pfaf
+import pfaf.pfafstetter as pfaf
 
 inshp = '../test_data/Flowline_CO_14_cameo.shp'
 outshp = '../test_data/Flowline_CO_14_cameo_mainstem.shp'
