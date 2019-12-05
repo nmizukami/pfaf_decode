@@ -1,52 +1,58 @@
 #!/usr/bin/env python
-'''
-Append fields in ascii to shapefile attribute
-ascii should include common field to shapefile attribute
-'''
 
+import sys
+import argparse
 import geopandas as gpd
 import pandas as pd
 
-#Mississippi
-#inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_MS_10U.shp'
-#outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_MS_10U_mainstem.shp'
-#asc = 'ms100_1'
+FIELD_TYPE = 'str'
 
-#Cameo
-#inshp = '../test_data/Flowline_CO_14_cameo.shp'
-#outshp = '../test_data/Flowline_CO_14_cameo_trib500_2.shp'
-#asc = 'cameo500_2'
+def process_command_line():
+    '''Parse the commandline'''
+    parser = argparse.ArgumentParser(description='Script to append fields in ascii to shapefile attribute')
+    parser.add_argument('inshp',
+                        help='input shapefile')
+    parser.add_argument('inasc',
+                        help='input ascii attributes')
+    parser.add_argument('ascfield',
+                        help='common field name in ascii')
+    parser.add_argument('shpfield',
+                        help='common field name in shapefile')
+    parser.add_argument('outshp',
+                        help='output shapefile')
 
-#upper colorado
-#inshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry.shp'
-#outshp = '../test_data/nhdPlus_SHPs_pfaf/Flowline_CO_14_LeesFerry_parallel_fortran1.shp'
-#asc = 'seginfo1'
+    args = parser.parse_args()
 
-inshp = '../test_data/nhdPlus_SHPs_class250/Flowline_CO_14.shp'
-outshp = '../test_data/nhdPlus_SHPs_class250/Flowline_CO_14_ntopo.shp'
-asc = 'streamOrder'
+    return(args)
 
-# attributes in csv
-common_field = 'ComID'
-#field_in_ascii =  ['level','trib_id','numseg']   # ['level','dangle']
-#field_in_ascii = ['pfaf_code','pfaf_common','numseg','core'] # ['level','trib_id','numseg']   # ['level','dangle']
-field_in_ascii = ['streamOrder'] # ['level','trib_id','numseg']   # ['level','dangle']
-field_in_ascii.insert(0,common_field)
 
-# read csv
-df = pd.read_csv(asc,
-                 skiprows=1,
-                 delim_whitespace=True,
-                 names=field_in_ascii)
-print(df)
+# main
+if __name__ == '__main__':
 
-#read shp
-shp = gpd.read_file(inshp)
-print shp
+  # process command line
+  args = process_command_line()
 
-# append csv attributes to shp
-new = pd.merge(shp, df, on=common_field, how='left', validate="one_to_one")
-print new
+  #read shp
+  shp = gpd.read_file(args.inshp)
+  shp[args.shpfield] = shp[args.shpfield].astype(FIELD_TYPE)
+  print(shp)
 
-# write new shapefile with new attributes
-new.to_file(outshp, driver='ESRI Shapefile')
+  # read csv
+  df = pd.read_csv(args.inasc,
+                   header=0,
+                   delim_whitespace=True)
+
+  df.rename(columns={args.ascfield:args.shpfield},
+            inplace=True)
+  print(df)
+
+  df[args.shpfield] = df[args.shpfield].astype(FIELD_TYPE)
+
+  print(df)
+
+  # append csv attributes to shp
+  new = pd.merge(shp, df, on=args.shpfield, how='left', validate="one_to_one")
+  print(new)
+
+  # write new shapefile with new attributes
+  new.to_file(args.outshp, driver='ESRI Shapefile')
