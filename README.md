@@ -17,6 +17,13 @@ cd pfaf_decode
 conda activate $ENVIRONMENT_NAME
 pip install -e .
 ```
+
+after that, pfafstetter module can be imported
+
+```python
+import pfaf.pfafstetter
+```
+
 or
 
 Append to the system environment variable PYTHONPATH the pfafstetter directory 
