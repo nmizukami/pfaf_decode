@@ -90,13 +90,15 @@ def check_upstream(pfaf_a, pfaf_b, includeClose=False, verbose=False):
   return isUpstream
 
 
-def get_subbasin(pfafs, pfaf_outlet):
+def get_subbasin(pfafs, pfaf_outlet, include_closed):
   '''
   Given a list of pfaf codes and pfaf code for desired segment in network, obtain list of upstream pfaf codes
   Input
 
-    pfafs:       list of pfaf codes,            vector, string
-    pfaf_outlet: pfaf code at desired segment,  scalar, string
+    pfafs:          list of pfaf codes,            vector, string
+    pfaf_outlet:    pfaf code at desired segment,  scalar, string
+    include_closed: indicator to consider
+                    closed basin in subbasin    ,  scalar, logical
 
   Return
 
@@ -106,10 +108,13 @@ def get_subbasin(pfafs, pfaf_outlet):
   sub_pfafs = []
   for pfaf in pfafs:
 
-    if pfaf == '-9999' or pfaf == 0:
+    if pfaf == '-9999' or pfaf == 0 or pfaf is None:
       continue
 
-    check = check_upstream(pfaf, pfaf_outlet)
+    if pfaf == pfaf_outlet:
+      check = True
+    else:
+      check = check_upstream(pfaf, pfaf_outlet, includeClosed=include_closed)
 
     if check:
      sub_pfafs.append(pfaf)

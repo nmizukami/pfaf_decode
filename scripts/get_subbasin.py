@@ -5,7 +5,6 @@ import argparse
 import fiona
 import pfaf.pfafstetter as pfaf
 
-include_closed = True    # check closed basin
 
 def process_command_line():
     '''Parse the commandline'''
@@ -18,6 +17,8 @@ def process_command_line():
                         help='pfaf field name')
     parser.add_argument('outpfaf',
                         help='pfaf code for outlet seg')
+    parser.add_argument('-c','--closed_basin', action="store_true",
+                        help="Include closed basins or not")
 
     args = parser.parse_args()
 
@@ -28,6 +29,8 @@ if __name__ == '__main__':
 
   # process command line
   args = process_command_line()
+
+  include_closed = args.closed_basin    #include closed basin
 
   shp = fiona.open(args.inshp)
 
@@ -50,5 +53,5 @@ if __name__ == '__main__':
 
       if check:
 
-        print('write seg-%s' % (pfaf_a))
+        print('write pfaf-%s' % (pfaf_a))
         output.write(feature)
